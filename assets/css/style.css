@@ -1,0 +1,66 @@
+/* Estilos personalizados para o sistema Gusta's Burguer */
+
+/* Estilos gerais */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Estilos do cabeçalho */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Estilos dos cards */
+.card {
+    transition: transform 0.3s;
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para tabelas */
+.table th {
+    background-color: #f8f9fa;
+}
+
+/* Estilos para botões de ação */
+.btn-action {
+    margin-right: 5px;
+}
+
+/* Estilos para imagens de produtos */
+.produto-img {
+    max-height: 150px;
+    object-fit: cover;
+}
+
+/* Estilos para status de pedidos */
+.status-pendente {
+    color: #ffc107;
+}
+
+.status-em-preparo {
+    color: #17a2b8;
+}
+
+.status-pronto {
+    color: #28a745;
+}
+
+.status-entregue {
+    color: #6c757d;
+}
+
+.status-cancelado {
+    color: #dc3545;
+}
+
+/* Estilos para alertas de estoque */
+.alerta-estoque {
+    font-weight: bold;
+    color: #dc3545;
+}

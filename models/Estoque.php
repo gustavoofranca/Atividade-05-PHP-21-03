@@ -1,92 +1,85 @@
 <?php
-
+/**
+ * Classe que representa o estoque de produtos
+ */
 class Estoque {
     private $id;
     private $produto_id;
-    private $produto;
     private $quantidade;
     private $quantidade_minima;
-
-    public function __construct($id = null, $produto_id = null, $produto = null, $quantidade = 0, $quantidade_minima = 5) {
+    
+    /**
+     * Construtor da classe
+     */
+    public function __construct($id = null, $produto_id = null, $quantidade = 0, $quantidade_minima = 5) {
         $this->id = $id;
         $this->produto_id = $produto_id;
-        $this->produto = $produto;
         $this->quantidade = $quantidade;
         $this->quantidade_minima = $quantidade_minima;
     }
-
-    // Getters
+    
+    // Getters e Setters
     public function getId() {
         return $this->id;
     }
-
-    public function getProdutoId() {
-        return $this->produto_id;
-    }
-
-    public function getProduto() {
-        return $this->produto;
-    }
-
-    public function getQuantidade() {
-        return $this->quantidade;
-    }
-
-    public function getQuantidadeMinima() {
-        return $this->quantidade_minima;
-    }
-
-    // Setters
+    
     public function setId($id) {
         $this->id = $id;
     }
-
+    
+    public function getProdutoId() {
+        return $this->produto_id;
+    }
+    
     public function setProdutoId($produto_id) {
         $this->produto_id = $produto_id;
     }
-
-    public function setProduto($produto) {
-        $this->produto = $produto;
+    
+    public function getQuantidade() {
+        return $this->quantidade;
     }
-
+    
     public function setQuantidade($quantidade) {
-        if ($quantidade >= 0) {
-            $this->quantidade = $quantidade;
-            return true;
-        }
-        return false;
+        $this->quantidade = $quantidade;
     }
-
+    
+    public function getQuantidadeMinima() {
+        return $this->quantidade_minima;
+    }
+    
     public function setQuantidadeMinima($quantidade_minima) {
-        if ($quantidade_minima >= 0) {
-            $this->quantidade_minima = $quantidade_minima;
-            return true;
-        }
-        return false;
+        $this->quantidade_minima = $quantidade_minima;
     }
-
-    // Métodos de negócio
+    
+    /**
+     * Verifica se o estoque está abaixo do mínimo
+     */
     public function estaAbaixoDoMinimo() {
         return $this->quantidade < $this->quantidade_minima;
     }
-
+    
+    /**
+     * Adiciona quantidade ao estoque
+     */
     public function adicionarQuantidade($quantidade) {
-        if ($quantidade > 0) {
-            $this->quantidade += $quantidade;
-            return true;
-        }
-        return false;
+        $this->quantidade += $quantidade;
+        return $this->salvar();
     }
-
+    
+    /**
+     * Remove quantidade do estoque
+     */
     public function removerQuantidade($quantidade) {
-        if ($quantidade > 0 && $quantidade <= $this->quantidade) {
+        if ($this->quantidade >= $quantidade) {
             $this->quantidade -= $quantidade;
-            return true;
+            return $this->salvar();
         }
         return false;
     }
-
-    // Métodos de persistência
+    
+    /**
+     * Salva o estoque no banco de dados
+     */
     public function salvar() {
         $db = Database::getInstance();
         
@@ -100,7 +93,8 @@ class Estoque {
                 ':quantidade' => $this->quantidade,
                 ':quantidade_minima' => $this->quantidade_minima
             ];
-            return $db->query($sql, $params);
+            $db->query($sql, $params);
+            return $this->id;
         } else {
             // Inserir novo estoque
             $sql = "INSERT INTO estoque (produto_id, quantidade, quantidade_minima) 
@@ -114,26 +108,10 @@ class Estoque {
             return $this->id;
         }
     }
-
-    public static function buscarPorId($id) {
-        $db = Database::getInstance();
-        $sql = "SELECT * FROM estoque WHERE id = :id";
-        $params = [':id' => $id];
-        $dados = $db->fetch($sql, $params);
-        
-        if ($dados) {
-            return new Estoque(
-                $dados['id'],
-                $dados['produto_id'],
-                null,
-                $dados['quantidade'],
-                $dados['quantidade_minima']
-            );
-        }
-        
-        return null;
-    }
-
+    
+    /**
+     * Busca um estoque pelo ID do produto
+     */
     public static function buscarPorProdutoId($produto_id) {
         $db = Database::getInstance();
         $sql = "SELECT * FROM estoque WHERE produto_id = :produto_id";
@@ -144,18 +122,17 @@ class Estoque {
             return new Estoque(
                 $dados['id'],
                 $dados['produto_id'],
-                null,
                 $dados['quantidade'],
                 $dados['quantidade_minima']
             );
         }
         
-        // Se não existir, criar um novo registro de estoque para o produto
-        $estoque = new Estoque(null, $produto_id, null, 0, 5);
-        $estoque->salvar();
-        return $estoque;
+        return null;
     }
-
+    
+    /**
+     * Lista todos os estoques com informações dos produtos
+     */
     public static function listarTodos() {
         $db = Database::getInstance();
         $sql = "SELECT e.*, p.nome as produto_nome FROM estoque e 
@@ -168,7 +145,6 @@ class Estoque {
             $estoque = new Estoque(
                 $dado['id'],
                 $dado['produto_id'],
-                null,
                 $dado['quantidade'],
                 $dado['quantidade_minima']
             );
@@ -178,4 +154,29 @@ class Estoque {
         
         return $estoques;
     }
-}
+    
+    /**
+     * Lista produtos com estoque abaixo do mínimo
+     */
+    public static function listarAbaixoDoMinimo() {
+        $db = Database::getInstance();
+        $sql = "SELECT e.*, p.nome as produto_nome FROM estoque e 
+                INNER JOIN produtos p ON e.produto_id = p.id 
+                WHERE e.quantidade < e.quantidade_minima 
+                ORDER BY p.nome";
+        $dados = $db->fetchAll($sql);
+        
+        $estoques = [];
+        foreach ($dados as $dado) {
+            $estoque = new Estoque(
+                $dado['id'],
+                $dado['produto_id'],
+                $dado['quantidade'],
+                $dado['quantidade_minima']
+            );
+            $estoque->produto_nome = $dado['produto_nome'];
+            $estoques[] = $estoque;
+        }
+        
+        return $estoques;
+    }
