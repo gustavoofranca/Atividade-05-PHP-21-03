@@ -3,21 +3,21 @@
     --primary: #ff4d4d;
     --primary-dark: #cc0000;
     --primary-light: #ff8080;
-
+    
     /* Secondary Colors */
     --secondary: #ff8533;
     --secondary-dark: #cc5200;
     --secondary-light: #ffb380;
-
+    
     /* Background Colors */
     --bg-light: #fff5f5;
     --bg-dark: #1a0f0f;
-
+    
     /* Text Colors */
     --text-primary: #1a0f0f;
     --text-secondary: #4d3d3d;
     --text-light: #ffffff;
-
+    
     /* Status Colors */
     --success: #2eb82e;
     --danger: #ff3333;
