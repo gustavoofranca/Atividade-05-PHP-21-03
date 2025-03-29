@@ -2,7 +2,13 @@
 let cartItems = [];
 
 // Initialize cart functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    // Check if BASE_URL is defined
+    if (typeof BASE_URL === 'undefined') {
+        console.error('BASE_URL is not defined. Cart functionality will not work properly.');
+        return;
+    }
+
     loadCartItems();
     initializeAddToCartButtons();
 });
@@ -52,7 +58,7 @@ function renderCartItems() {
     const cartContainer = document.getElementById('cart-items');
     if (!cartContainer) return;
 
-    cartContainer.innerHTML = cartItems.length === 0 
+    cartContainer.innerHTML = cartItems.length === 0
         ? '<p class="text-center text-muted">Seu carrinho está vazio</p>'
         : cartItems.map(item => `
             <div class="cart-item border-bottom pb-3 mb-3">
@@ -92,7 +98,7 @@ function renderCartItems() {
 // Add item to cart
 async function addToCart(button) {
     const { id, name, price, image } = button.dataset;
-    
+
     try {
         const response = await fetch(`${BASE_URL}?page=cart&action=add`, {
             method: 'POST',
@@ -104,7 +110,7 @@ async function addToCart(button) {
                 quantidade: 1
             })
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to add item to cart');
         }
@@ -115,8 +121,13 @@ async function addToCart(button) {
         renderCartItems();
 
         // Show feedback
-        const toast = new bootstrap.Toast(document.getElementById('addToCartToast'));
-        toast.show();
+        const toastElement = document.getElementById('addToCartToast');
+        if (toastElement) {
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        } else {
+            console.error('Toast element not found');
+        }
 
     } catch (error) {
         console.error('Error adding to cart:', error);
